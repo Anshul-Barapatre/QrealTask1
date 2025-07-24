@@ -1,59 +1,41 @@
-
-
 import React, { useState, useRef } from 'react';
-import ReactCrop from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import Cropper from "react-cropper";
+import "cropperjs/dist/cropper.css";
 import { Modal, Button } from 'antd';
 import '../components/uploadImages.css';
 
 const UploadImage = () => {
   const [image, setImage] = useState('');
-  const [Crop, setCrop] = useState({ aspect: 0 }); 
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const imgRef = useRef(null);
+  const imgRef = useRef(null); // ✅ Use this with Cropper
 
   const handleImage = (e) => {
-    const Reader = new FileReader();
-    Reader.onloadend = () => {
-      setImage(Reader.result);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result);
       setIsDialogOpen(true);
     };
-    Reader.readAsDataURL(e.target.files[0]);
+    reader.readAsDataURL(e.target.files[0]);
   };
 
   const download = () => {
-    const img = imgRef.current;
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = Crop.width;
-    canvas.height = Crop.height;
+    const cropper = imgRef.current?.cropper;
+    if (cropper) {
+      const canvas = cropper.getCroppedCanvas();
+      if (canvas) {
+        const dataUrl = canvas.toDataURL();
+        setPreviewUrl(dataUrl);
 
-    const scaleX = img.naturalWidth / img.width;
-    const scaleY = img.naturalHeight / img.height;
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = "cropped-image.png";
+        a.click();
 
-    ctx.drawImage(
-      img,
-      Crop.x * scaleX,
-      Crop.y * scaleY,
-      Crop.width * scaleX,
-      Crop.height * scaleY,
-      0,
-      0,
-      Crop.width,
-      Crop.height
-    );
-
-    const dataUrl = canvas.toDataURL();
-    setPreviewUrl(dataUrl);
-
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = "cropimage.png";
-    a.click();
-
-    setIsDialogOpen(false);
+        setIsDialogOpen(false);
+      }
+    }
   };
 
   return (
@@ -62,18 +44,21 @@ const UploadImage = () => {
 
       <Modal
         open={isDialogOpen}
-        
-        footer={null} 
-        >
-  
-      
-        <ReactCrop crop={Crop} onChange={setCrop}>
-          <img src={image} alt="Crop" ref={imgRef} />
-        </ReactCrop>
-         <Button key="download" type="primary" onClick={download}>
-            Download Image
-          </Button>,
-        
+        onCancel={() => setIsDialogOpen(false)}
+        footer={null}
+         closable={false} 
+      >
+        <Cropper
+          src={image}
+          style={{ height: 400, width: "100%" }}
+          initialAspectRatio={NaN} 
+          guides={true}
+             ref={imgRef}
+        />
+
+        <Button type="primary" onClick={download} style={{ marginTop: 16 }}>
+          Download Image
+        </Button>
       </Modal>
 
       <div className="preview-section">
