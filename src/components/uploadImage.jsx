@@ -62,20 +62,22 @@ const UploadImage = () => {
 
       <Modal
         open={isDialogOpen}
-        onCancel={() => setIsDialogOpen(false)}
-        footer={[
-          <Button key="download" type="primary" onClick={download}>
-            Download Image
-          </Button>,
-        ]}
-      >
+        
+        footer={null} 
+        >
+  
+      
         <ReactCrop crop={Crop} onChange={setCrop}>
           <img src={image} alt="Crop" ref={imgRef} />
         </ReactCrop>
+         <Button key="download" type="primary" onClick={download}>
+            Download Image
+          </Button>,
+        
       </Modal>
 
       <div className="preview-section">
-        <h3>Cropped Image Preview</h3>
+        <h3>Image Preview</h3>
         {previewUrl && (
           <img src={previewUrl} alt="Cropped Preview image" />
         )}
